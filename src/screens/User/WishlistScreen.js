@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchWishlist, removeFromWishlist } from '../../store/slices/wishlistSlice';
+import { fetchWishlist, toggleWishlist } from '../../store/slices/wishlistSlice';
 import { addToCart } from '../../store/slices/cartSlice';
 import Button from '../../components/atoms/Button';
 import { colors } from '../../styles/colors';
@@ -9,6 +9,7 @@ import { textStyles } from '../../styles/typography';
 import { spacing } from '../../styles/spacing';
 import { commonStyles } from '../../styles/commonStyles';
 import Toast from 'react-native-toast-message';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const WishlistScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -19,32 +20,47 @@ const WishlistScreen = ({ navigation }) => {
   }, [dispatch]);
 
   const handleMoveToCart = async (item) => {
-    const result = await dispatch(addToCart({ productId: item.product.id, quantity: 1 }));
+    const product = item.product || item;
+    if (!product?.id) return;
+
+    const result = await dispatch(addToCart({ productId: product.id, quantity: 1 }));
     if (addToCart.fulfilled.match(result)) {
-      dispatch(removeFromWishlist(item.product.id));
+      dispatch(toggleWishlist(product));
       Toast.show({
         type: 'success',
         text1: 'Moved to Cart',
-        text2: `${item.product.name} is ready for checkout!`,
+        text2: `${product.name} is ready for checkout!`,
       });
     }
   };
 
   const renderWishlistItem = ({ item }) => {
-    const { product } = item;
+    // API schema: item.product contains the product details
+    // Fallback to 'item' if product is missing (defensive programming)
+    const product = item.product || item;
+
+    if (!product) return null;
+
     return (
       <View style={styles.wishlistCard}>
-        <Image source={{ uri: product.image }} style={styles.productImage} />
+        <Image 
+          source={{ uri: product.image || 'https://via.placeholder.com/150' }} 
+          style={styles.productImage} 
+        />
         <View style={styles.productInfo}>
           <View style={commonStyles.spaceBetween}>
-            <Text style={[textStyles.body, { fontWeight: 'bold' }]}>{product.name}</Text>
-            <TouchableOpacity onPress={() => dispatch(removeFromWishlist(product.id))}>
-               <Text style={{color: colors.error, fontSize: 18}}>×</Text>
+            <Text style={[textStyles.body, { fontWeight: 'bold' }]} numberOfLines={1}>
+              {product.name || 'Unknown Product'}
+            </Text>
+            <TouchableOpacity onPress={() => dispatch(toggleWishlist(product))}>
+               <Icon name="close" size={20} color={colors.error} />
             </TouchableOpacity>
           </View>
-          <Text style={[textStyles.caption, { color: colors.gray[500] }]}>{product.category?.name}</Text>
+          <Text style={[textStyles.caption, { color: colors.gray[500] }]}>
+            {product.category?.name || 'Standard'}
+          </Text>
           <Text style={[textStyles.body, { color: colors.primary, fontWeight: '700', marginTop: 4 }]}>
-            {product.price?.formatted || `$${product.price}`}
+            {product.price?.formatted || `$${product.price || 0}`}
           </Text>
           
           <TouchableOpacity 
@@ -76,7 +92,7 @@ const WishlistScreen = ({ navigation }) => {
         <FlatList
           data={wishlist}
           renderItem={renderWishlistItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.product?.id || item.id)}
           contentContainerStyle={styles.listContent}
         />
       )}

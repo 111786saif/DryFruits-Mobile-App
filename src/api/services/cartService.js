@@ -2,24 +2,32 @@ import apiClient from '../apiClient';
 import { ENDPOINTS } from '../endpoints';
 
 const cartService = {
-  getCart: async () => {
-    return await apiClient.get(ENDPOINTS.CART.GET);
+  getCart: async (guestUuid) => {
+    return await apiClient.get(ENDPOINTS.CART.GET, {
+      params: { guest_uuid: guestUuid }
+    });
   },
 
-  addItem: async (productId, quantity, variantId) => {
+  addItem: async (productId, quantity, variantId, guestUuid) => {
     return await apiClient.post(ENDPOINTS.CART.ADD_ITEM, {
       product_id: productId,
       quantity,
       variant_id: variantId,
+      guest_uuid: guestUuid,
     });
   },
 
-  updateItem: async (itemId, quantity) => {
-    return await apiClient.put(ENDPOINTS.CART.UPDATE_ITEM(itemId), { quantity });
+  updateItem: async (itemId, quantity, guestUuid) => {
+    return await apiClient.put(ENDPOINTS.CART.UPDATE_ITEM(itemId), { 
+      quantity,
+      guest_uuid: guestUuid 
+    });
   },
 
-  removeItem: async (itemId) => {
-    return await apiClient.delete(ENDPOINTS.CART.DELETE_ITEM(itemId));
+  deleteItem: async (itemId, guestUuid) => {
+    return await apiClient.delete(ENDPOINTS.CART.DELETE_ITEM(itemId), {
+      params: { guest_uuid: guestUuid }
+    });
   },
 };
 

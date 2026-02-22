@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, SafeAreaView, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Recommended for React Navigation
 import Toast from 'react-native-toast-message';

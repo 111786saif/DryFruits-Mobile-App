@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, ScrollView, Re
 import { useDispatch, useSelector } from 'react-redux';
 import ProductGrid from '../../components/organisms/ProductGrid';
 import { fetchProducts, fetchCategories } from '../../store/slices/productSlice';
+import { fetchWishlist } from '../../store/slices/wishlistSlice';
 import { MOCK_BANNERS } from '../../api/mockData';
 import { commonStyles } from '../../styles/commonStyles';
 import { textStyles } from '../../styles/typography';
@@ -67,11 +68,13 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     dispatch(fetchProducts());
     dispatch(fetchCategories());
+    dispatch(fetchWishlist());
   }, [dispatch]);
 
   const onRefresh = () => {
     dispatch(fetchProducts());
     dispatch(fetchCategories());
+    dispatch(fetchWishlist());
   };
 
   const getInitials = (name) => {

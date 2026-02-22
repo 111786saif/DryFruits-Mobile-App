@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateQuantity, removeFromCart } from '../../store/slices/cartSlice';
+import { fetchCart, updateQuantity, removeFromCart } from '../../store/slices/cartSlice';
 import Button from '../../components/atoms/Button';
 import { colors } from '../../styles/colors';
 import { textStyles } from '../../styles/typography';
@@ -10,48 +10,63 @@ import { commonStyles } from '../../styles/commonStyles';
 
 const CartScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { items, subtotal, shipping, tax, totalAmount } = useSelector((state) => state.cart);
+  const { items, totals, loading } = useSelector((state) => state.cart);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      dispatch(fetchCart());
+    });
+    return unsubscribe;
+  }, [navigation, dispatch]);
+
+  const { subtotal, formatted_subtotal } = totals || {};
 
   const handleUpdateQuantity = (itemId, currentQty, delta) => {
     const newQty = currentQty + delta;
-    if (newQty > 0) {
+    if (newQty >= 1) {
+      // Immediate dispatch for a snappy UI
       dispatch(updateQuantity({ itemId, quantity: newQty }));
     }
   };
 
   const renderCartItem = ({ item }) => {
-    // Assuming 'item' contains 'product', 'quantity', and 'price_total' object
-    const product = item.product || item;
+    // API schema: item.product, item.variant, item.quantity, item.line_total
+    const product = item.product;
+    const variant = item.variant;
     return (
       <View style={styles.cartCard}>
-        <Image source={{ uri: product.image }} style={styles.itemImage} />
+        <Image source={{ uri: product?.image }} style={styles.itemImage} />
         <View style={styles.itemInfo}>
           <View style={commonStyles.spaceBetween}>
-            <Text style={[textStyles.body, { fontWeight: 'bold' }]}>{product.name}</Text>
+            <Text style={[textStyles.body, { fontWeight: 'bold' }]} numberOfLines={1}>{product?.name}</Text>
             <TouchableOpacity onPress={() => dispatch(removeFromCart(item.id))}>
               <Text style={{ color: colors.error, fontSize: 12 }}>Remove</Text>
             </TouchableOpacity>
           </View>
-          <Text style={[textStyles.caption, { color: colors.gray[500] }]}>{product.category?.name}</Text>
+          <Text style={[textStyles.caption, { color: colors.gray[500] }]}>
+            {variant?.name || product?.category?.name || 'Standard'}
+          </Text>
           
           <View style={[commonStyles.spaceBetween, { marginTop: spacing.sm }]}>
             <Text style={[textStyles.body, { color: colors.primary, fontWeight: '700' }]}>
-              {item.price_total?.formatted || `$${item.price_total}`}
+              {item.line_total || `$${(variant?.price_amount || product?.price?.amount || 0) * item.quantity}`}
             </Text>
             
             <View style={styles.quantityContainer}>
               <TouchableOpacity 
                 style={styles.qtyBtn} 
                 onPress={() => handleUpdateQuantity(item.id, item.quantity, -1)}
+                disabled={loading}
               >
-                <Text style={styles.qtyBtnText}>-</Text>
+                <Text style={[styles.qtyBtnText, loading && {color: colors.gray[400]}]}>-</Text>
               </TouchableOpacity>
               <Text style={styles.qtyText}>{item.quantity}</Text>
               <TouchableOpacity 
                 style={styles.qtyBtn} 
                 onPress={() => handleUpdateQuantity(item.id, item.quantity, 1)}
+                disabled={loading}
               >
-                <Text style={styles.qtyBtnText}>+</Text>
+                <Text style={[styles.qtyBtnText, loading && {color: colors.gray[400]}]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -60,7 +75,16 @@ const CartScreen = ({ navigation }) => {
     );
   };
 
+  if (loading && items.length === 0) {
+    return (
+      <View style={[commonStyles.container, commonStyles.center]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   if (items.length === 0) {
+// ... existing empty state code
     return (
       <SafeAreaView style={[commonStyles.container, commonStyles.center, { padding: spacing.xl }]}>
         <View style={styles.emptyIconContainer}>
@@ -89,7 +113,7 @@ const CartScreen = ({ navigation }) => {
       <FlatList
         data={items}
         renderItem={renderCartItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -97,20 +121,12 @@ const CartScreen = ({ navigation }) => {
       <View style={styles.summaryContainer}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>{subtotal?.formatted || `$${Number(subtotal).toFixed(2)}`}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Shipping</Text>
-          <Text style={styles.summaryValue}>{shipping?.formatted || `$${Number(shipping).toFixed(2)}`}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Tax</Text>
-          <Text style={styles.summaryValue}>{tax?.formatted || `$${Number(tax).toFixed(2)}`}</Text>
+          <Text style={styles.summaryValue}>{formatted_subtotal || '$0.00'}</Text>
         </View>
         <View style={[styles.summaryRow, { marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.gray[100] }]}>
           <Text style={[styles.summaryLabel, { fontWeight: 'bold', color: colors.text.primary }]}>Total Amount</Text>
           <Text style={[styles.summaryValue, { fontWeight: 'bold', color: colors.primary, fontSize: 18 }]}>
-            {totalAmount?.formatted || `$${Number(totalAmount).toFixed(2)}`}
+            {formatted_subtotal || '$0.00'}
           </Text>
         </View>
         
