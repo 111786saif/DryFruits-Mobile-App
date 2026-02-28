@@ -4,7 +4,7 @@ import authService from '../../api/services/authService';
 export const fetchAddresses = createAsyncThunk('addresses/fetch', async (_, { rejectWithValue }) => {
   try {
     const response = await authService.getAddresses();
-    return response.data;
+    return response;
   } catch (error) {
     return rejectWithValue(error || 'Failed to fetch addresses');
   }
@@ -13,7 +13,7 @@ export const fetchAddresses = createAsyncThunk('addresses/fetch', async (_, { re
 export const addAddress = createAsyncThunk('addresses/add', async (addressData, { rejectWithValue }) => {
   try {
     const response = await authService.addAddress(addressData);
-    return response.data;
+    return response;
   } catch (error) {
     return rejectWithValue(error || 'Failed to add address');
   }
@@ -43,7 +43,7 @@ const addressSlice = createSlice({
       })
       .addCase(fetchAddresses.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = action.payload || [];
       })
       .addCase(fetchAddresses.rejected, (state, action) => {
         state.loading = false;

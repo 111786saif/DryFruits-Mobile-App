@@ -20,6 +20,7 @@ export const ENDPOINTS = {
   PRODUCTS: {
     LIST: '/products',
     DETAILS: (id) => `/products/${id}`,
+    RELATED: (id) => `/products/${id}/related`,
     TOP: '/products/top',
     SPECIAL_OFFERS: '/products/special-offers',
   },
@@ -44,11 +45,11 @@ export const ENDPOINTS = {
   },
   WISHLIST: {
     GET: '/wishlist',
-    ADD: '/wishlist',
-    REMOVE: (productId) => `/wishlist/${productId}`,
+    ADD_ITEM: '/wishlist/items',
+    DELETE_ITEM: (itemId) => `/wishlist/items/${itemId}`,
   },
   PROMOCODE: {
-    VALIDATE: '/promocodes/validate',
+    VALIDATE: '/promocode/validate',
   },
   HEALTH: '/health',
 };

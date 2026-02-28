@@ -2,21 +2,33 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import cartService from '../../api/services/cartService';
 import { getGuestUuid } from '../../utils/cartUtils';
 
+// Helper to extract cart data from various response formats
+const extractCartData = (response) => {
+  // Handle: { data: { items, totals } } or { items, totals } or { cart: { items, totals } }
+  const cart = response?.data?.cart || response?.cart || response?.data || response;
+  return {
+    items: cart?.items || [],
+    totals: cart?.totals || { subtotal: 0, formatted_subtotal: '$0.00' },
+  };
+};
+
 export const fetchCart = createAsyncThunk('cart/fetch', async (_, { rejectWithValue }) => {
   try {
     const guestUuid = await getGuestUuid();
     const response = await cartService.getCart(guestUuid);
-    return response.data || response;
+    return extractCartData(response);
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to fetch cart');
   }
 });
 
-export const addToCart = createAsyncThunk('cart/add', async ({ productId, quantity, variantId }, { rejectWithValue }) => {
+export const addToCart = createAsyncThunk('cart/add', async ({ productId, quantity, variantId }, { dispatch, rejectWithValue }) => {
   try {
     const guestUuid = await getGuestUuid();
     const response = await cartService.addItem(productId, quantity, variantId, guestUuid);
-    return response.data || response;
+    // Re-fetch the full cart to ensure we have the latest data
+    dispatch(fetchCart());
+    return extractCartData(response);
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to add item to cart');
   }
@@ -26,7 +38,7 @@ export const updateQuantity = createAsyncThunk('cart/updateQuantity', async ({ i
   try {
     const guestUuid = await getGuestUuid();
     const response = await cartService.updateItem(itemId, quantity, guestUuid);
-    return response.data || response;
+    return extractCartData(response);
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to update quantity');
   }
@@ -36,7 +48,7 @@ export const removeFromCart = createAsyncThunk('cart/remove', async (itemId, { r
   try {
     const guestUuid = await getGuestUuid();
     const response = await cartService.deleteItem(itemId, guestUuid);
-    return response.data || response;
+    return extractCartData(response);
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to remove item');
   }
@@ -68,8 +80,23 @@ const cartSlice = createSlice({
         state.loading = false;
         state.items = action.payload.items || [];
         state.totals = action.payload.totals || { subtotal: 0, formatted_subtotal: '$0.00' };
+        state.error = null;
       })
       .addCase(fetchCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Add to cart
+      .addCase(addToCart.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addToCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.items || state.items;
+        state.totals = action.payload.totals || state.totals;
+        state.error = null;
+      })
+      .addCase(addToCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -94,14 +121,7 @@ const cartSlice = createSlice({
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.items = action.payload.items || state.items;
         state.totals = action.payload.totals || state.totals;
-      })
-      .addMatcher(
-        (action) => [addToCart.fulfilled].includes(action.type),
-        (state, action) => {
-          state.items = action.payload.items || [];
-          state.totals = action.payload.totals || state.totals;
-        }
-      );
+      });
   },
 });
 

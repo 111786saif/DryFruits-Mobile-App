@@ -4,7 +4,7 @@ import orderService from '../../api/services/orderService';
 export const fetchOrders = createAsyncThunk('orders/fetch', async (_, { rejectWithValue }) => {
   try {
     const response = await orderService.getOrders();
-    return response.data || response;
+    return response;
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to fetch orders');
   }
@@ -13,7 +13,7 @@ export const fetchOrders = createAsyncThunk('orders/fetch', async (_, { rejectWi
 export const fetchOrderDetails = createAsyncThunk('orders/fetchDetails', async (orderId, { rejectWithValue }) => {
   try {
     const response = await orderService.getOrderDetails(orderId);
-    return response.data || response;
+    return response;
   } catch (error) {
     return rejectWithValue(error.toString() || 'Failed to fetch order details');
   }
@@ -22,7 +22,7 @@ export const fetchOrderDetails = createAsyncThunk('orders/fetchDetails', async (
 export const checkout = createAsyncThunk('orders/checkout', async (checkoutData, { rejectWithValue }) => {
   try {
     const response = await orderService.checkout(checkoutData);
-    return response.data || response;
+    return response;
   } catch (error) {
     return rejectWithValue(error.toString() || 'Checkout failed');
   }

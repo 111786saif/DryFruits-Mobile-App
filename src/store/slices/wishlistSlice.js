@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import wishlistService from '../../api/services/wishlistService';
+import { getGuestUuid } from '../../utils/cartUtils';
 
 export const fetchWishlist = createAsyncThunk('wishlist/fetch', async (_, { rejectWithValue }) => {
   try {
-    const response = await wishlistService.getWishlist();
+    const guestUuid = await getGuestUuid();
+    const response = await wishlistService.getWishlist(guestUuid);
     // Support various API response formats: 
     // 1. Array directly: [...]
     // 2. { data: [...] }
@@ -22,6 +24,7 @@ export const fetchWishlist = createAsyncThunk('wishlist/fetch', async (_, { reje
 
 export const toggleWishlist = createAsyncThunk('wishlist/toggle', async (product, { getState, rejectWithValue }) => {
   const { items } = getState().wishlist;
+  const guestUuid = await getGuestUuid();
   const productId = String(product.id);
   
   // Robust check for existing item
@@ -35,11 +38,11 @@ export const toggleWishlist = createAsyncThunk('wishlist/toggle', async (product
         return { productId: product.id, action: 'removed', wasOptimistic: true };
       }
       
-      await wishlistService.removeFromWishlist(existingItem.id);
+      await wishlistService.removeFromWishlist(existingItem.id, guestUuid);
       return { productId: product.id, action: 'removed' };
     } else {
       const variantId = product.variants?.[0]?.id || product.default_variant_id || product.id;
-      const response = await wishlistService.addToWishlist(product.id, variantId);
+      const response = await wishlistService.addToWishlist(product.id, variantId, guestUuid);
       
       // Extract the new wishlist item robustly
       let newItem = response.data || response;

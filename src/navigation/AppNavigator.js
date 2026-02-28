@@ -5,10 +5,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import AuthNavigator from './AuthNavigator';
 import TabNavigator from './TabNavigator';
 import ProductDetailsScreen from '../screens/Main/ProductDetailsScreen';
+import SearchScreen from '../screens/Main/SearchScreen';
 import CheckoutScreen from '../screens/Cart/CheckoutScreen';
 import WishlistScreen from '../screens/User/WishlistScreen';
 import OrdersScreen from '../screens/User/OrdersScreen';
+import OrderDetailsScreen from '../screens/User/OrderDetailsScreen';
 import AddressScreen from '../screens/User/AddressScreen';
+import AddAddressScreen from '../screens/User/AddAddressScreen';
 import { restoreToken } from '../store/slices/authSlice';
 import { getStorageItem, StorageKeys } from '../utils/storage';
 import SplashScreen from '../screens/Auth/SplashScreen';
@@ -53,11 +56,14 @@ const AppNavigator = () => {
         ) : (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
             <Stack.Screen name="Orders" component={OrdersScreen} />
+            <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
             <Stack.Screen name="Addresses" component={AddressScreen} />
+            <Stack.Screen name="AddAddress" component={AddAddressScreen} />
           </>
         )}
       </Stack.Navigator>

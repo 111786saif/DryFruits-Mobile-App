@@ -23,7 +23,8 @@ const WishlistScreen = ({ navigation }) => {
     const product = item.product || item;
     if (!product?.id) return;
 
-    const result = await dispatch(addToCart({ productId: product.id, quantity: 1 }));
+    const variantId = product.default_variant_id || product.variants?.[0]?.id || product.id;
+    const result = await dispatch(addToCart({ productId: product.id, quantity: 1, variantId }));
     if (addToCart.fulfilled.match(result)) {
       dispatch(toggleWishlist(product));
       Toast.show({

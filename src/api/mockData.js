@@ -121,21 +121,27 @@ export const MOCK_PRODUCTS = [
 export const MOCK_BANNERS = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?q=80&w=800&auto=format&fit=crop',
-    title: 'Premium Quality',
-    subtitle: 'Get up to 30% OFF on Almonds',
+    image: 'https://images.unsplash.com/photo-1596591606975-97ee5cef3a1e?q=80&w=1000&auto=format&fit=crop',
+    title: 'Supreme Mixed Nuts',
+    subtitle: 'A handful of health every day. Save 25%',
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1596591606975-97ee5cef3a1e?q=80&w=800&auto=format&fit=crop',
-    title: 'Healthy Snacking',
-    subtitle: 'Fresh Walnuts from the Himalayas',
+    image: 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?q=80&w=1000&auto=format&fit=crop',
+    title: 'Premium Cashews',
+    subtitle: 'Creamy, crunchy & delicious. New Arrivals.',
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?q=80&w=800&auto=format&fit=crop',
-    title: 'Exotic Collection',
-    subtitle: 'Try our new Dried Fruits mix',
+    image: 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?q=80&w=1000&auto=format&fit=crop',
+    title: 'Medjool Dates',
+    subtitle: 'Nature\'s candy for instant energy booster.',
+  },
+  {
+    id: '4',
+    image: 'https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?q=80&w=1000&auto=format&fit=crop',
+    title: 'Dried Exotic Berries',
+    subtitle: 'Antioxidant rich snack for your cravings.',
   },
 ];
 

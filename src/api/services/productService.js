@@ -10,6 +10,10 @@ const productService = {
     return await apiClient.get(ENDPOINTS.PRODUCTS.DETAILS(id));
   },
 
+  getRelatedProducts: async (id) => {
+    return await apiClient.get(ENDPOINTS.PRODUCTS.RELATED(id));
+  },
+
   getTopProducts: async () => {
     return await apiClient.get(ENDPOINTS.PRODUCTS.TOP);
   },
